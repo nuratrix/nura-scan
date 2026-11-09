@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "domain": "access-analyzer",
+  "rules": [
+    {
+      "rule_id": "IAM-AA-001",
+      "domain": "access-analyzer",
+      "enabled": true,
+      "title": "No active IAM Access Analyzer in region",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create an IAM Access Analyzer in {region} (ORGANIZATION type if AWS Organizations is enabled).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "access-analyzer-agent"
+      ],
+      "resource_type": "AWS::AccessAnalyzer::Analyzer",
+      "checker": "access_analyzer_checker._check_analyzer_exists"
+    },
+    {
+      "rule_id": "IAM-AA-002",
+      "domain": "access-analyzer",
+      "enabled": true,
+      "title": "External or public access to a resource",
+      "params": {
+        "high_risk_resource_types": [
+          "AWS::S3::Bucket",
+          "AWS::KMS::Key",
+          "AWS::SecretsManager::Secret",
+          "AWS::IAM::Role",
+          "AWS::Lambda::Function",
+          "AWS::Lambda::LayerVersion",
+          "AWS::SQS::Queue",
+          "AWS::SNS::Topic"
+        ],
+        "finding_status": "ACTIVE"
+      },
+      "severity": {
+        "metric": "exposure",
+        "bands": [
+          {
+            "eq": "public_high_risk",
+            "level": "CRITICAL"
+          },
+          {
+            "in": [
+              "public",
+              "external_high_risk"
+            ],
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review the resource policy of {resource_id} and remove the external principal if unintended; archive the finding if it is intentional.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "access-analyzer-agent"
+      ],
+      "resource_type": "AWS::AccessAnalyzer::Finding",
+      "checker": "access_analyzer_checker._check_active_findings"
+    },
+    {
+      "rule_id": "IAM-AA-003",
+      "domain": "access-analyzer",
+      "enabled": true,
+      "title": "Unused active access key",
+      "params": {
+        "key_unused_days": 45
+      },
+      "severity": {
+        "metric": "days_unused",
+        "bands": [
+          {
+            "gt": 180,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Deactivate and delete access key {resource_id} (unused {days_unused} days); prefer IAM roles over long-lived keys.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "access-analyzer-agent"
+      ],
+      "resource_type": "AWS::IAM::AccessKey",
+      "checker": "unused_permissions_checker._check_unused_access_keys"
+    },
+    {
+      "rule_id": "IAM-AA-004",
+      "domain": "access-analyzer",
+      "enabled": true,
+      "title": "Unused IAM role with permissions",
+      "params": {
+        "role_unused_days": 90,
+        "skip_service_linked_roles": true
+      },
+      "severity": {
+        "metric": "days_unused",
+        "bands": [
+          {
+            "gt": 365,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Confirm whether {resource_id} (unused {days_unused} days) is needed; if not, detach its policies and delete it.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "access-analyzer-agent"
+      ],
+      "resource_type": "AWS::IAM::Role",
+      "checker": "unused_permissions_checker._check_unused_iam_roles"
+    },
+    {
+      "rule_id": "IAM-AA-005",
+      "domain": "access-analyzer",
+      "enabled": true,
+      "title": "Console user without MFA",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enforce MFA for {resource_id} with an aws:MultiFactorAuthPresent condition or SCP, or move to IAM Identity Center.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "access-analyzer-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "unused_permissions_checker._check_console_users_no_mfa"
+    }
+  ]
+}

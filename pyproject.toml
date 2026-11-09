@@ -1,0 +1,15 @@
+[project]
+name = "nura"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["boto3", "pydantic", "jsonschema"]   # shared: common/, rules/, checkers/
+
+[project.optional-dependencies]
+infra  = ["aws-cdk-lib", "constructs"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest", "moto"]

@@ -1,0 +1,325 @@
+{
+  "schema_version": "1.0",
+  "domain": "incident",
+  "rules": [
+    {
+      "rule_id": "INC-DET-001",
+      "domain": "incident",
+      "enabled": true,
+      "title": "CloudWatch alarm firing",
+      "params": {
+        "state_value": "ALARM"
+      },
+      "severity": {
+        "metric": "alarm_age_minutes",
+        "bands": [
+          {
+            "gt": 30,
+            "level": "CRITICAL"
+          },
+          {
+            "gt": 10,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate alarm {resource_id} ({alarm_age_minutes} min in ALARM). Check its metrics and correlate with recent deployments or configuration changes.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::CloudWatch::Alarm",
+      "checker": "incident_detector._check_alarming_alarms"
+    },
+    {
+      "rule_id": "INC-DET-002",
+      "domain": "incident",
+      "enabled": true,
+      "title": "Load balancer targets unhealthy",
+      "params": {
+        "max_target_ids_reported": 5
+      },
+      "severity": {
+        "metric": "unhealthy_pct",
+        "bands": [
+          {
+            "gte": 50,
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check application logs on the unhealthy targets in {resource_id}, verify the health-check path returns HTTP 200 and that security groups allow load balancer traffic.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "checker": "incident_detector._check_unhealthy_targets"
+    },
+    {
+      "rule_id": "INC-DET-003",
+      "domain": "incident",
+      "enabled": true,
+      "title": "Lambda error spike",
+      "params": {
+        "lookback_minutes": 60,
+        "min_error_rate_pct": 5
+      },
+      "severity": {
+        "metric": "error_rate_pct",
+        "bands": [
+          {
+            "gte": 50,
+            "level": "CRITICAL"
+          },
+          {
+            "gte": 20,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check CloudWatch Logs and X-Ray traces for {resource_id} ({error_rate_pct}% error rate over {lookback_minutes} min) and look for a recent deployment.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "incident_detector._check_lambda_error_spikes"
+    },
+    {
+      "rule_id": "INC-DET-004",
+      "domain": "incident",
+      "enabled": true,
+      "title": "EC2 status check failing",
+      "params": {
+        "healthy_status": "ok"
+      },
+      "severity": {
+        "metric": "system_status",
+        "bands": [
+          {
+            "eq": "impaired",
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check the console output of {resource_id}. If system status is impaired, stop and start it to move to healthy hardware.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "incident_detector._check_ec2_status_checks"
+    },
+    {
+      "rule_id": "INC-DET-005",
+      "domain": "incident",
+      "enabled": true,
+      "title": "High error volume in logs",
+      "params": {
+        "lookback_minutes": 60,
+        "max_log_groups": 50,
+        "max_events_per_query": 25,
+        "patterns": [
+          {
+            "pattern": "FATAL",
+            "min_events": 1
+          },
+          {
+            "pattern": "ERROR",
+            "min_events": 10
+          },
+          {
+            "pattern": "Exception",
+            "min_events": 20
+          }
+        ],
+        "skip_log_group_substrings": [
+          "CloudTrail",
+          "flow-logs",
+          "vpc-flow",
+          "aws-controltower",
+          "access-logs"
+        ],
+        "one_finding_per_log_group": true
+      },
+      "severity": {
+        "metric": "matched_pattern",
+        "bands": [
+          {
+            "eq": "FATAL",
+            "level": "CRITICAL"
+          },
+          {
+            "eq": "ERROR",
+            "level": "HIGH"
+          },
+          {
+            "eq": "Exception",
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate the {matched_pattern} messages in {resource_id} and correlate with other alerts and recent deployments.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::Logs::LogGroup",
+      "checker": "incident_detector._check_log_error_patterns"
+    },
+    {
+      "rule_id": "INC-DIAG-001",
+      "domain": "incident",
+      "enabled": true,
+      "title": "Recent deployment events",
+      "params": {
+        "lookback_hours": 24,
+        "deployment_event_names": [
+          "UpdateService",
+          "CreateService",
+          "RegisterTaskDefinition",
+          "DeregisterTaskDefinition",
+          "UpdateFunctionCode",
+          "UpdateFunctionConfiguration",
+          "CreateDeployment",
+          "UpdateStack",
+          "ExecuteChangeSet"
+        ],
+        "max_event_names_queried": 5,
+        "max_results_first_event": 50,
+        "max_results_other_events": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review the {event_count} deployment events in the last {lookback_hours}h against the incident timeline and consider rolling back the most recent one.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Event",
+      "checker": "diagnostic_runner._check_recent_deployments"
+    },
+    {
+      "rule_id": "INC-DIAG-002",
+      "domain": "incident",
+      "enabled": true,
+      "title": "ECS service degraded",
+      "params": {
+        "max_services_per_cluster": 10
+      },
+      "severity": {
+        "metric": "running_pct",
+        "bands": [
+          {
+            "lt": 50,
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check task stopped reasons for {resource_id} ({running_count}/{desired_count} running), inspect the container logs and verify task CPU and memory limits.",
+      "recommended_action": "REPLACE",
+      "remediation": {
+        "action": "restart_ecs_service",
+        "eligible_when": null,
+        "requires_approval": true
+      },
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::ECS::Service",
+      "checker": "diagnostic_runner._check_ecs_service_health"
+    },
+    {
+      "rule_id": "INC-DIAG-003",
+      "domain": "incident",
+      "enabled": true,
+      "title": "RDS instance not available",
+      "params": {
+        "healthy_status": "available"
+      },
+      "severity": {
+        "metric": "db_status",
+        "bands": [
+          {
+            "in": [
+              "failed",
+              "incompatible-restore"
+            ],
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check RDS events for {resource_id} (status {db_status}). If failed, restore from the latest snapshot; check pending maintenance and parameter-group changes.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "diagnostic_runner._check_rds_health"
+    },
+    {
+      "rule_id": "INC-DIAG-004",
+      "domain": "incident",
+      "enabled": true,
+      "title": "Resource metrics for affected resource",
+      "params": {
+        "lookback_hours": 24,
+        "ec2_metrics": [
+          "CPUUtilization",
+          "NetworkIn",
+          "NetworkOut"
+        ],
+        "rds_metrics": [
+          "CPUUtilization",
+          "DatabaseConnections",
+          "FreeableMemory"
+        ]
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Use the CPU, network, connection and memory trends for {resource_id} to identify the root-cause pattern.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "incident-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "diagnostic_runner._get_resource_metrics"
+    }
+  ]
+}

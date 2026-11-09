@@ -1,0 +1,1252 @@
+{
+  "schema_version": "1.0",
+  "domain": "compliance",
+  "rules": [
+    {
+      "rule_id": "COMP-CIS-001",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password minimum length below 14, or no password policy",
+      "params": {
+        "min_password_length": 14
+      },
+      "severity": {
+        "metric": "policy_state",
+        "bands": [
+          {
+            "eq": "missing",
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set the minimum password length to {min_password_length} in IAM account settings (or create a password policy if none exists).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.8"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-002",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password policy does not require uppercase",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable RequireUppercaseCharacters.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.9"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-003",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password policy does not require lowercase",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable RequireLowercaseCharacters.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.10"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-004",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password policy does not require symbols",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable RequireSymbols.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.11"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-005",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password policy does not require numbers",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable RequireNumbers.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.12"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-006",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password expiry longer than 365 days",
+      "params": {
+        "max_password_age_days": 365,
+        "recommended_max_password_age_days": 90
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set MaxPasswordAge to {recommended_max_password_age_days} or less.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.13"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-007",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Password reuse prevention below 24",
+      "params": {
+        "min_password_reuse_prevention": 24
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set PasswordReusePrevention to {min_password_reuse_prevention}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.14"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccountPasswordPolicy",
+      "checker": "cis_checker._check_iam_password_policy"
+    },
+    {
+      "rule_id": "COMP-CIS-008",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Root account has active access keys",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete root account access keys immediately and use IAM roles instead.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.4"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "cis_checker._check_root_account"
+    },
+    {
+      "rule_id": "COMP-CIS-009",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Root account MFA not enabled",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable hardware MFA on the root account immediately.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.5"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "cis_checker._check_root_account"
+    },
+    {
+      "rule_id": "COMP-CIS-010",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Access key not rotated within 90 days",
+      "params": {
+        "max_key_age_days": 90
+      },
+      "severity": {
+        "metric": "key_age_days",
+        "bands": [
+          {
+            "gt": 180,
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Rotate or disable access key {resource_id} ({key_age_days} days old).",
+      "recommended_action": "ROTATE_KEY",
+      "remediation": {
+        "action": "deactivate_access_key",
+        "eligible_when": {
+          "metric": "key_age_days",
+          "gt": 180
+        },
+        "requires_approval": true
+      },
+      "controls": [
+        "CIS-AWS-v2.0:1.14"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::AccessKey",
+      "checker": "cis_checker._check_access_keys_rotation"
+    },
+    {
+      "rule_id": "COMP-CIS-011",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Console user without MFA",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable MFA for {resource_id} or move to IAM Identity Center with enforced MFA.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:1.10"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "cis_checker._check_mfa_console_users"
+    },
+    {
+      "rule_id": "COMP-CIS-012",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No multi-region CloudTrail, or trail not logging",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a multi-region trail logging to a secure S3 bucket, and start logging on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:3.1"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cis_checker._check_cloudtrail_enabled"
+    },
+    {
+      "rule_id": "COMP-CIS-013",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "CloudTrail log file validation disabled",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable log file validation on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:3.2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cis_checker._check_cloudtrail_log_validation"
+    },
+    {
+      "rule_id": "COMP-CIS-014",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "CloudTrail not encrypted with KMS",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Configure a customer-managed KMS key for {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:3.5"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cis_checker._check_cloudtrail_kms"
+    },
+    {
+      "rule_id": "COMP-CIS-015",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "AWS Config not enabled or not recording",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable AWS Config with all resource types in all regions and start recorder {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:3.5"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigurationRecorder",
+      "checker": "cis_checker._check_config_enabled"
+    },
+    {
+      "rule_id": "COMP-CIS-016",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "VPC Flow Logs not enabled",
+      "params": {
+        "required_flow_log_status": "ACTIVE"
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable VPC Flow Logs on {resource_id} to S3 or CloudWatch Logs.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:3.9"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::EC2::VPC",
+      "checker": "cis_checker._check_vpc_flow_logs"
+    },
+    {
+      "rule_id": "COMP-CIS-017",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Default security group has rules",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove all rules from default security group {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS-AWS-v2.0:5.4"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "cis_checker._check_default_security_groups"
+    },
+    {
+      "rule_id": "COMP-CONFIG-000",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "AWS Config not enabled - managed rules cannot be evaluated",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable AWS Config with all resource types in all active regions.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigurationRecorder",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-001",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule root-account-mfa-enabled not deployed or non-compliant: Root account MFA not enabled",
+      "params": {
+        "config_rule_name": "root-account-mfa-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable MFA on the root account immediately.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-002",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule mfa-enabled-for-iam-console-access not deployed or non-compliant: IAM console users without MFA",
+      "params": {
+        "config_rule_name": "mfa-enabled-for-iam-console-access",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable MFA for all IAM users with console access.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-003",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule access-keys-rotated not deployed or non-compliant: Access keys not rotated within 90 days",
+      "params": {
+        "config_rule_name": "access-keys-rotated",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Rotate access keys every 90 days.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-004",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule restricted-ssh not deployed or non-compliant: SSH (port 22) open to internet",
+      "params": {
+        "config_rule_name": "restricted-ssh",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove SSH rules allowing 0.0.0.0/0. Use SSM Session Manager instead.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-005",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule restricted-common-ports not deployed or non-compliant: Dangerous ports open to internet",
+      "params": {
+        "config_rule_name": "restricted-common-ports",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict all dangerous ports to specific IP ranges.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-006",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule s3-bucket-public-read-prohibited not deployed or non-compliant: S3 bucket allows public read",
+      "params": {
+        "config_rule_name": "s3-bucket-public-read-prohibited",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable S3 Block Public Access on all buckets.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS",
+        "HIPAA"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-007",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule s3-bucket-public-write-prohibited not deployed or non-compliant: S3 bucket allows public write",
+      "params": {
+        "config_rule_name": "s3-bucket-public-write-prohibited",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable S3 Block Public Access and remove public write permissions.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-008",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule s3-bucket-server-side-encryption-enabled not deployed or non-compliant: S3 bucket not encrypted",
+      "params": {
+        "config_rule_name": "s3-bucket-server-side-encryption-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable default SSE-S3 or SSE-KMS encryption on all buckets.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2",
+        "HIPAA",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-009",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule cloud-trail-enabled not deployed or non-compliant: CloudTrail not enabled",
+      "params": {
+        "config_rule_name": "cloud-trail-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable a multi-region CloudTrail trail immediately.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS",
+        "HIPAA"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-010",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule cloud-trail-log-file-validation-enabled not deployed or non-compliant: CloudTrail log validation disabled",
+      "params": {
+        "config_rule_name": "cloud-trail-log-file-validation-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable log file validation on all CloudTrail trails.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-011",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule encrypted-volumes not deployed or non-compliant: EBS volumes not encrypted",
+      "params": {
+        "config_rule_name": "encrypted-volumes",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable EBS encryption by default in EC2 settings. Encrypt existing volumes.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2",
+        "HIPAA",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-012",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule rds-storage-encrypted not deployed or non-compliant: RDS storage not encrypted",
+      "params": {
+        "config_rule_name": "rds-storage-encrypted",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable storage encryption on RDS instances.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2",
+        "HIPAA",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-013",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule rds-instance-public-access-check not deployed or non-compliant: RDS instance publicly accessible",
+      "params": {
+        "config_rule_name": "rds-instance-public-access-check",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable public accessibility on RDS instances and use VPC-only access.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2",
+        "PCI-DSS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-014",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule vpc-flow-logs-enabled not deployed or non-compliant: VPC Flow Logs not enabled",
+      "params": {
+        "config_rule_name": "vpc-flow-logs-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable VPC Flow Logs on all VPCs and deliver to S3 or CloudWatch.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-015",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule multi-region-cloudtrail-enabled not deployed or non-compliant: No multi-region CloudTrail",
+      "params": {
+        "config_rule_name": "multi-region-cloudtrail-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a multi-region CloudTrail trail.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-016",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule iam-password-policy not deployed or non-compliant: IAM password policy non-compliant",
+      "params": {
+        "config_rule_name": "iam-password-policy",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Update IAM password policy to meet CIS benchmark requirements.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-017",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule guardduty-enabled-centralized not deployed or non-compliant: GuardDuty not enabled",
+      "params": {
+        "config_rule_name": "guardduty-enabled-centralized",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable GuardDuty in all regions.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "CIS",
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-018",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule securityhub-enabled not deployed or non-compliant: AWS Security Hub not enabled",
+      "params": {
+        "config_rule_name": "securityhub-enabled",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable AWS Security Hub and subscribe to CIS and SOC 2 standards.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-019",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule kms-cmk-not-scheduled-for-deletion not deployed or non-compliant: KMS CMK scheduled for deletion",
+      "params": {
+        "config_rule_name": "kms-cmk-not-scheduled-for-deletion",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Verify no active resources use this key before deletion. Cancel deletion if in doubt.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-CONFIG-020",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule backup-plan-min-frequency-and-min-retention-check not deployed or non-compliant: Backup plan frequency or retention insufficient",
+      "params": {
+        "config_rule_name": "backup-plan-min-frequency-and-min-retention-check",
+        "max_noncompliant_resources_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create AWS Backup plans with daily backups and at least 35-day retention.",
+      "recommended_action": "RETENTION_FLOOR",
+      "remediation": null,
+      "controls": [
+        "SOC2",
+        "HIPAA"
+      ],
+      "agents": [
+        "compliance-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "config_rules_checker.lambda_handler"
+    },
+    {
+      "rule_id": "COMP-SOC2-001",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Admin user without MFA",
+      "params": {
+        "admin_policy_name_substring": "AdministratorAccess"
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable MFA for {resource_id} immediately and replace AdministratorAccess with least-privilege policies.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC6.1"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "soc2_checker._check_cc6_logical_access"
+    },
+    {
+      "rule_id": "COMP-SOC2-002",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Role trust policy allows any principal",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict the trust policy of {resource_id} to specific accounts, services or role ARNs.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC6.2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::IAM::Role",
+      "checker": "soc2_checker._check_cc6_logical_access"
+    },
+    {
+      "rule_id": "COMP-SOC2-003",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "S3 bucket not encrypted at rest",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable SSE-S3 or SSE-KMS default encryption on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC6.7"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "soc2_checker._check_cc6_encryption"
+    },
+    {
+      "rule_id": "COMP-SOC2-004",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "S3 bucket does not enforce HTTPS",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add a bucket policy on {resource_id} denying s3:* when aws:SecureTransport is false.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC6.7"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "soc2_checker._check_cc6_encryption"
+    },
+    {
+      "rule_id": "COMP-SOC2-005",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No CloudWatch metric filter for root login",
+      "params": {
+        "filter_name": "root-login",
+        "filter_pattern": "$.userIdentity.type = Root"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a CloudWatch metric filter and alarm matching: {filter_pattern}",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC7.2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Logs::MetricFilter",
+      "checker": "soc2_checker._check_cc7_monitoring"
+    },
+    {
+      "rule_id": "COMP-SOC2-006",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No CloudWatch metric filter for console auth failures",
+      "params": {
+        "filter_name": "console-auth-failure",
+        "filter_pattern": "$.errorCode = ConsoleLogin"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a CloudWatch metric filter and alarm matching: {filter_pattern}",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC7.2"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Logs::MetricFilter",
+      "checker": "soc2_checker._check_cc7_monitoring"
+    },
+    {
+      "rule_id": "COMP-SOC2-007",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No CloudWatch metric filter for IAM policy changes",
+      "params": {
+        "filter_name": "iam-policy-change",
+        "filter_pattern": "$.eventName = DeleteGroupPolicy OR $.eventName = PutGroupPolicy"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a CloudWatch metric filter and alarm matching: {filter_pattern}",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC7.3"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Logs::MetricFilter",
+      "checker": "soc2_checker._check_cc7_monitoring"
+    },
+    {
+      "rule_id": "COMP-SOC2-008",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No CloudWatch metric filter for security group changes",
+      "params": {
+        "filter_name": "sg-change",
+        "filter_pattern": "$.eventName = AuthorizeSecurityGroupIngress"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a CloudWatch metric filter and alarm matching: {filter_pattern}",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC7.3"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Logs::MetricFilter",
+      "checker": "soc2_checker._check_cc7_monitoring"
+    },
+    {
+      "rule_id": "COMP-SOC2-009",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "No AWS Config rules configured",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Deploy AWS Security Hub to create SOC 2 relevant Config rules.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC8.1"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "soc2_checker._check_cc8_change_management"
+    },
+    {
+      "rule_id": "COMP-SOC2-010",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "Config rule non-compliant",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review and remediate the non-compliant resources of Config rule {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:CC8.1"
+      ],
+      "agents": [
+        "compliance-agent"
+      ],
+      "resource_type": "AWS::Config::ConfigRule",
+      "checker": "soc2_checker._check_cc8_change_management"
+    },
+    {
+      "rule_id": "COMP-SOC2-011",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "RDS instance not Multi-AZ",
+      "params": {
+        "skip_instance_classes": [
+          "db.t2.micro",
+          "db.t3.micro"
+        ]
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable Multi-AZ on {resource_id} to meet availability commitments.",
+      "recommended_action": "ENFORCE_REDUNDANCY",
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:A1.2"
+      ],
+      "agents": [
+        "compliance-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "soc2_checker._check_availability"
+    },
+    {
+      "rule_id": "COMP-SOC2-012",
+      "domain": "compliance",
+      "enabled": true,
+      "title": "RDS backup retention insufficient",
+      "params": {
+        "min_backup_retention_days": 7,
+        "skip_instance_classes": [
+          "db.t2.micro",
+          "db.t3.micro"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set backup retention on {resource_id} to at least {min_backup_retention_days} days (30 for production).",
+      "recommended_action": "RETENTION_FLOOR",
+      "remediation": null,
+      "controls": [
+        "SOC2-TSC:A1.2"
+      ],
+      "agents": [
+        "compliance-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "soc2_checker._check_availability"
+    }
+  ]
+}

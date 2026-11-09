@@ -1,0 +1,418 @@
+{
+  "schema_version": "1.0",
+  "domain": "infrastructure",
+  "rules": [
+    {
+      "rule_id": "EC2-001",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Stopped EC2 instance",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Terminate {resource_id} if it is no longer needed to avoid EBS charges.",
+      "recommended_action": "TERMINATE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ec2_checker._check_stopped_instances"
+    },
+    {
+      "rule_id": "EC2-002",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Unattached EBS volume",
+      "params": {},
+      "severity": {
+        "metric": "days_unattached",
+        "bands": [
+          {
+            "gt": 30,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete {resource_id} if it is not needed; you are paying for unused storage.",
+      "recommended_action": "DELETE",
+      "remediation": {
+        "action": "delete_ebs_volume",
+        "eligible_when": null,
+        "requires_approval": true
+      },
+      "controls": [],
+      "agents": [
+        "infra-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::EC2::Volume",
+      "checker": "ec2_checker._check_unattached_volumes"
+    },
+    {
+      "rule_id": "EC2-003",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "EBS snapshot older than 90 days",
+      "params": {
+        "max_age_days": 90
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review retention for {resource_id} ({age_days} days old) and delete it if no longer needed.",
+      "recommended_action": "DELETE_SNAPSHOT",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::EC2::Snapshot",
+      "checker": "ec2_checker._check_old_snapshots"
+    },
+    {
+      "rule_id": "EC2-004",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Publicly shared AMI",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Make {resource_id} private unless it is intentionally public.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::Image",
+      "checker": "ec2_checker._check_public_amis"
+    },
+    {
+      "rule_id": "EC2-005",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Unassociated Elastic IP",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Release {resource_id} to avoid unnecessary charges (${hourly_cost_usd}/hr).",
+      "recommended_action": "DELETE",
+      "remediation": {
+        "action": "release_elastic_ip",
+        "eligible_when": null,
+        "requires_approval": true
+      },
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::EIP",
+      "checker": "ec2_checker._check_unused_elastic_ips"
+    },
+    {
+      "rule_id": "EC2-006",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Unencrypted EBS volume in use",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create an encrypted snapshot of {resource_id} and replace the volume.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::Volume",
+      "checker": "ec2_checker._check_unencrypted_volumes"
+    },
+    {
+      "rule_id": "RDS-001",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS instance publicly accessible",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable public accessibility on {resource_id} and use VPC-only access.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_checker._check_public_instances"
+    },
+    {
+      "rule_id": "RDS-002",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS storage not encrypted",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Encrypt {resource_id} by restoring from an encrypted snapshot.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_checker._check_unencrypted_instances"
+    },
+    {
+      "rule_id": "RDS-003",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS instance not Multi-AZ",
+      "params": {
+        "skip_instance_classes": [
+          "db.t2.micro",
+          "db.t3.micro"
+        ]
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable Multi-AZ on {resource_id} if it is a production database.",
+      "recommended_action": "ENFORCE_REDUNDANCY",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_checker._check_no_multi_az"
+    },
+    {
+      "rule_id": "RDS-004",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS automated backups disabled",
+      "params": {
+        "recommended_retention_days": 7
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable automated backups on {resource_id} with at least {recommended_retention_days} days retention.",
+      "recommended_action": "RETENTION_FLOOR",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_checker._check_no_backup"
+    },
+    {
+      "rule_id": "RDS-005",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS manual snapshot older than 90 days",
+      "params": {
+        "max_age_days": 90
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete {resource_id} ({age_days} days old) if it is no longer needed.",
+      "recommended_action": "DELETE_SNAPSHOT",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBSnapshot",
+      "checker": "rds_checker._check_old_snapshots"
+    },
+    {
+      "rule_id": "NET-001",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "NAT Gateway exists - verify it is used",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check BytesOutToDestination for {resource_id} (~${monthly_cost_usd}/month plus data transfer); delete it if near zero.",
+      "recommended_action": "DELETE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::NatGateway",
+      "checker": "network_checker._check_unused_nat_gateways"
+    },
+    {
+      "rule_id": "NET-002",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Unhealthy load balancer targets",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate target health in {resource_id}: application logs and health-check configuration.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "checker": "network_checker._check_unhealthy_load_balancers"
+    },
+    {
+      "rule_id": "NET-003",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Empty non-default VPC",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete {resource_id} if it is unused.",
+      "recommended_action": "DELETE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::VPC",
+      "checker": "network_checker._check_empty_vpcs"
+    },
+    {
+      "rule_id": "NET-004",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Resources running in default VPC",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Migrate workloads out of default VPC {resource_id} into a custom VPC with subnet isolation.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::VPC",
+      "checker": "network_checker._check_default_vpc_in_use"
+    },
+    {
+      "rule_id": "TAG-001",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "EC2 instance missing required tags",
+      "params": {
+        "required_tags": [
+          "Environment",
+          "Owner",
+          "Project",
+          "CostCenter"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add the missing tags to {resource_id}: {missing_tags}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "tagging_checker._check_ec2_tags"
+    },
+    {
+      "rule_id": "TAG-002",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "RDS instance missing required tags",
+      "params": {
+        "required_tags": [
+          "Environment",
+          "Owner",
+          "Project",
+          "CostCenter"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add the missing tags to {resource_id}: {missing_tags}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "tagging_checker._check_rds_tags"
+    },
+    {
+      "rule_id": "TAG-003",
+      "domain": "infrastructure",
+      "enabled": true,
+      "title": "Load balancer missing required tags",
+      "params": {
+        "required_tags": [
+          "Environment",
+          "Owner",
+          "Project",
+          "CostCenter"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add the missing tags to {resource_id}: {missing_tags}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "infra-agent"
+      ],
+      "resource_type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "checker": "tagging_checker._check_elb_tags"
+    }
+  ]
+}

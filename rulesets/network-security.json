@@ -1,0 +1,357 @@
+{
+  "schema_version": "1.0",
+  "domain": "network-security",
+  "rules": [
+    {
+      "rule_id": "NET-VPC-001",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "VPC flow logs not enabled",
+      "params": {
+        "min_retention_days": 90
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable flow logs on {resource_id} to CloudWatch Logs or S3 (REJECT at minimum) with at least {min_retention_days} days retention.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::VPC",
+      "checker": "vpc_checker._check_flow_logs"
+    },
+    {
+      "rule_id": "NET-VPC-002",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Resources running in default VPC",
+      "params": {
+        "instance_states": [
+          "running",
+          "stopped"
+        ]
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Migrate resources from default VPC {resource_id} to a purpose-built VPC with private subnets, then delete the default VPC.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::VPC",
+      "checker": "vpc_checker._check_default_vpc"
+    },
+    {
+      "rule_id": "NET-VPC-003",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Private-looking subnet auto-assigns public IPs",
+      "params": {
+        "intentional_public_name_keywords": [
+          "public",
+          "dmz",
+          "ingress",
+          "alb",
+          "elb"
+        ],
+        "skip_default_vpc": true
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable 'Map public IP on launch' on {resource_id}, or rename it to include 'public' if intentional.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::Subnet",
+      "checker": "vpc_checker._check_public_subnets"
+    },
+    {
+      "rule_id": "NET-VPC-004",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "VPC peering between external accounts",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Verify peering {resource_id} is intentional and restrict its routes and security groups to required CIDRs.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::VPCPeeringConnection",
+      "checker": "vpc_checker._check_vpc_peering"
+    },
+    {
+      "rule_id": "NET-VPC-005",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Detached Internet Gateway",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete Internet Gateway {resource_id} if it is no longer needed.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::InternetGateway",
+      "checker": "vpc_checker._check_unused_igw"
+    },
+    {
+      "rule_id": "NET-SG-001",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Security group allows all inbound traffic from the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove the all-traffic rule on {resource_id} and replace it with rules scoped to required ports and trusted CIDRs.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "nacl_checker._check_security_groups"
+    },
+    {
+      "rule_id": "NET-SG-002",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Security group exposes a dangerous port to the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ],
+        "ports": {
+          "22": "SSH",
+          "3389": "RDP",
+          "23": "Telnet",
+          "21": "FTP",
+          "1433": "MSSQL",
+          "3306": "MySQL",
+          "5432": "PostgreSQL",
+          "6379": "Redis",
+          "27017": "MongoDB",
+          "9200": "Elasticsearch",
+          "2375": "Docker daemon (unencrypted)",
+          "2379": "etcd"
+        }
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict {service} (port {port}) on {resource_id} to trusted IP ranges, or use a VPN, bastion or Session Manager.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "nacl_checker._check_security_groups"
+    },
+    {
+      "rule_id": "NET-NACL-001",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "NACL allows all inbound traffic from the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      },
+      "severity": {
+        "metric": "is_default",
+        "bands": [
+          {
+            "eq": true,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Replace the catch-all ALLOW on {resource_id} with rules for required ports, and add higher-priority DENY rules for dangerous ports.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::NetworkAcl",
+      "checker": "nacl_checker._check_nacls"
+    },
+    {
+      "rule_id": "NET-NACL-002",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "NACL allows a dangerous port from the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ],
+        "ports": {
+          "22": "SSH",
+          "3389": "RDP",
+          "23": "Telnet",
+          "21": "FTP",
+          "1433": "MSSQL",
+          "3306": "MySQL",
+          "5432": "PostgreSQL",
+          "6379": "Redis",
+          "27017": "MongoDB",
+          "9200": "Elasticsearch",
+          "2375": "Docker daemon (unencrypted)",
+          "2379": "etcd"
+        }
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add a DENY rule for port {port} ({service}) from 0.0.0.0/0 on {resource_id} ahead of the ALLOW rule, or narrow the ALLOW range.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::NetworkAcl",
+      "checker": "nacl_checker._check_nacls"
+    },
+    {
+      "rule_id": "NET-DNS-001",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "DNS query logging not enabled for VPC",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Associate a Route 53 Resolver query logging configuration with {resource_id} and alert on suspicious domains.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::Route53Resolver::ResolverQueryLoggingConfig",
+      "checker": "dns_checker._check_dns_query_logging"
+    },
+    {
+      "rule_id": "NET-DNS-002",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "No Route 53 Resolver DNS Firewall configured",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create DNS Firewall rule groups with the AWS-managed malware and botnet domain lists and associate them with each VPC.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::Route53Resolver::FirewallRuleGroupAssociation",
+      "checker": "dns_checker._check_dns_firewall"
+    },
+    {
+      "rule_id": "NET-DNS-002b",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "VPC has no DNS Firewall rule group",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Associate a DNS Firewall rule group with {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::Route53Resolver::FirewallRuleGroupAssociation",
+      "checker": "dns_checker._check_dns_firewall"
+    },
+    {
+      "rule_id": "NET-TGW-001",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Transit Gateway auto-accepts shared attachments",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable AutoAcceptSharedAttachments on {resource_id} and approve each attachment manually via RAM allow-lists.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::TransitGateway",
+      "checker": "dns_checker._check_transit_gateways"
+    },
+    {
+      "rule_id": "NET-TGW-002",
+      "domain": "network-security",
+      "enabled": true,
+      "title": "Transit Gateway uses default route table association",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable DefaultRouteTableAssociation on {resource_id} and create a route table per network segment.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "network-security-agent"
+      ],
+      "resource_type": "AWS::EC2::TransitGateway",
+      "checker": "dns_checker._check_transit_gateways"
+    }
+  ]
+}

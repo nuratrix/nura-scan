@@ -1,0 +1,218 @@
+{
+  "schema_version": "1.0",
+  "domain": "backup-dr",
+  "rules": [
+    {
+      "rule_id": "BDR-001",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "No AWS Backup plans configured",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create AWS Backup plans: daily/7-day, weekly/30-day and monthly/1-year retention, assigned by a Backup=required tag.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupPlan",
+      "checker": "backup_plan_checker._check_backup_plans_exist"
+    },
+    {
+      "rule_id": "BDR-002",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Backup rule retention too short",
+      "params": {
+        "min_daily_retention_days": 7,
+        "min_other_retention_days": 30,
+        "daily_schedule_markers": [
+          "* * ? *",
+          "0 * ? *"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Increase DeleteAfterDays on {resource_id} from {delete_after_days} to at least {min_retention_days} days.",
+      "recommended_action": "RETENTION_FLOOR",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupPlan",
+      "checker": "backup_plan_checker._check_plan_retention"
+    },
+    {
+      "rule_id": "BDR-003",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Production/staging EC2 instances not covered by AWS Backup",
+      "params": {
+        "env_tag_keys": [
+          "Environment",
+          "Env"
+        ],
+        "protected_env_values": [
+          "production",
+          "prod",
+          "staging"
+        ],
+        "max_instances_listed": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add the {unprotected_count} unprotected instances to a backup plan, e.g. via a Backup=required tag-based selection.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "backup_plan_checker._check_unprotected_resources"
+    },
+    {
+      "rule_id": "BDR-004",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "No backup plan has cross-region copy",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add CopyActions to backup rules that copy to a secondary region with an existing destination vault.",
+      "recommended_action": "CROSS_REGION_REPLICA",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupPlan",
+      "checker": "backup_plan_checker._check_cross_region_backup"
+    },
+    {
+      "rule_id": "BDR-005",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Backup vault has no KMS key",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a new vault with a customer-managed KMS key and migrate recovery points from {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupVault",
+      "checker": "backup_vault_checker._check_vault_encryption"
+    },
+    {
+      "rule_id": "BDR-005b",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Backup vault uses the AWS-managed key",
+      "params": {
+        "aws_managed_key_marker": "aws/backup"
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Use a customer-managed KMS key for {resource_id} to control rotation, key policy and audit.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupVault",
+      "checker": "backup_vault_checker._check_vault_encryption"
+    },
+    {
+      "rule_id": "BDR-006",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Backup vault has no access policy",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add a vault access policy to {resource_id} denying backup:DeleteRecoveryPoint, and consider Vault Lock.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupVault",
+      "checker": "backup_vault_checker._check_vault_access_policy"
+    },
+    {
+      "rule_id": "BDR-007",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Backup jobs failing",
+      "params": {
+        "recent_days": 7,
+        "max_resources_reported": 10
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate the {failure_count} failed backup jobs for {resource_id}, fix the cause, and run an on-demand backup.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::BackupJob",
+      "checker": "backup_vault_checker._check_recent_job_failures"
+    },
+    {
+      "rule_id": "BDR-008",
+      "domain": "backup-dr",
+      "enabled": true,
+      "title": "Stale recovery point",
+      "params": {
+        "max_backup_age_days": 2
+      },
+      "severity": {
+        "metric": "last_backup_age_days",
+        "bands": [
+          {
+            "gt": 7,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check backup job history for {resource_id} (last backup {last_backup_age_days} days ago) and trigger an on-demand backup.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::Backup::ProtectedResource",
+      "checker": "backup_vault_checker._check_recovery_point_age"
+    }
+  ]
+}

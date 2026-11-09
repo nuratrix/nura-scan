@@ -1,0 +1,1905 @@
+{
+  "schema_version": "1.0",
+  "domain": "security",
+  "rules": [
+    {
+      "rule_id": "SEC-IAM-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "Root account used recently",
+      "params": {
+        "max_days_since_root_use": 30
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Root was used {days_since_use} day(s) ago. Use IAM users or roles with least privilege instead of root.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::RootAccount",
+      "checker": "iam_checker._check_root_account_usage"
+    },
+    {
+      "rule_id": "SEC-IAM-001b",
+      "domain": "security",
+      "enabled": true,
+      "title": "Root account MFA not enabled",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable virtual or hardware MFA on the root account immediately.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::RootAccount",
+      "checker": "iam_checker._check_root_account_usage"
+    },
+    {
+      "rule_id": "SEC-IAM-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "Console IAM user without MFA",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable MFA for {resource_id} or disable console access if it is not needed.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "iam_checker._check_mfa_on_users"
+    },
+    {
+      "rule_id": "SEC-IAM-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "Access key not rotated",
+      "params": {
+        "max_key_age_days": 90
+      },
+      "severity": {
+        "metric": "key_age_days",
+        "bands": [
+          {
+            "gt": 180,
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Rotate access key {resource_id} ({key_age_days} days old) and update the applications using it.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::AccessKey",
+      "checker": "iam_checker._check_old_access_keys"
+    },
+    {
+      "rule_id": "SEC-IAM-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "IAM password policy weak or missing",
+      "params": {
+        "min_password_length": 14,
+        "require_uppercase": true,
+        "require_lowercase": true,
+        "require_numbers": true,
+        "require_symbols": true,
+        "max_password_age_days": 90,
+        "min_password_reuse_prevention": 24
+      },
+      "severity": {
+        "metric": "policy_state",
+        "bands": [
+          {
+            "eq": "missing",
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Configure the password policy: at least {min_password_length} characters, upper/lower/number/symbol, expiry within {max_password_age_days} days, reuse prevention of {min_password_reuse_prevention}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::PasswordPolicy",
+      "checker": "iam_checker._check_password_policy"
+    },
+    {
+      "rule_id": "SEC-IAM-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "IAM user has administrative managed policy",
+      "params": {
+        "admin_policy_names": [
+          "AdministratorAccess",
+          "PowerUserAccess"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Replace {policy_name} on {resource_id} with least-privilege policies.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "iam_checker._check_admin_policies"
+    },
+    {
+      "rule_id": "SEC-IAM-005b",
+      "domain": "security",
+      "enabled": true,
+      "title": "Role inline policy allows */*",
+      "params": {
+        "skip_role_path_substring": "aws-service-role"
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Replace inline policy {policy_name} on {resource_id} with a least-privilege policy.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::Role",
+      "checker": "iam_checker._check_admin_policies"
+    },
+    {
+      "rule_id": "SEC-IAM-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "IAM user console credentials unused",
+      "params": {
+        "max_days_unused": 90
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable console access for {resource_id} (unused {days_unused} days) or remove the user.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "iam_checker._check_unused_credentials"
+    },
+    {
+      "rule_id": "SEC-IAM-007",
+      "domain": "security",
+      "enabled": true,
+      "title": "IAM user has inline policies",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Convert the inline policies on {resource_id} to managed policies.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::User",
+      "checker": "iam_checker._check_inline_policies"
+    },
+    {
+      "rule_id": "SEC-IAM-008",
+      "domain": "security",
+      "enabled": true,
+      "title": "Role trust policy allows any AWS principal",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict the trust policy of {resource_id} to specific account IDs or services.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::IAM::Role",
+      "checker": "iam_checker._check_overly_permissive_roles"
+    },
+    {
+      "rule_id": "SEC-S3-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 public access not fully blocked",
+      "params": {
+        "required_settings": [
+          "BlockPublicAcls",
+          "IgnorePublicAcls",
+          "BlockPublicPolicy",
+          "RestrictPublicBuckets"
+        ]
+      },
+      "severity": {
+        "metric": "public_access_block",
+        "bands": [
+          {
+            "eq": "missing",
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable all four public access block settings on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_public_access"
+    },
+    {
+      "rule_id": "SEC-S3-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 bucket policy allows public access",
+      "params": {
+        "dangerous_actions": [
+          "s3:*",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove the public principal from the policy on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_bucket_policy"
+    },
+    {
+      "rule_id": "SEC-S3-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 bucket default encryption missing or weak",
+      "params": {
+        "allowed_algorithms": [
+          "AES256",
+          "aws:kms",
+          "aws:kms:dsse"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable SSE-S3 (AES256) or SSE-KMS default encryption on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_encryption"
+    },
+    {
+      "rule_id": "SEC-S3-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 versioning not enabled",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable versioning on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_versioning"
+    },
+    {
+      "rule_id": "SEC-S3-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 access logging not enabled",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable server access logging on {resource_id} to a dedicated logging bucket.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_logging"
+    },
+    {
+      "rule_id": "SEC-S3-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "S3 bucket has no lifecycle policy",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Define lifecycle rules on {resource_id} that match your data retention policy.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_lifecycle"
+    },
+    {
+      "rule_id": "SEC-S3-007",
+      "domain": "security",
+      "enabled": true,
+      "title": "Important S3 bucket has no cross-region replication",
+      "params": {
+        "important_name_keywords": [
+          "prod",
+          "production",
+          "backup",
+          "critical",
+          "data",
+          "db",
+          "database"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Consider enabling cross-region replication on {resource_id} for disaster recovery.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_checker._check_replication"
+    },
+    {
+      "rule_id": "SEC-SG-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "Security group allows all inbound traffic from the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove the all-traffic rule on {resource_id} and allow only required ports.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_ingress_rules"
+    },
+    {
+      "rule_id": "SEC-SG-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "Security group exposes a sensitive port to the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ],
+        "ports": {
+          "22": "SSH",
+          "3389": "RDP",
+          "1433": "MSSQL",
+          "3306": "MySQL",
+          "5432": "PostgreSQL",
+          "27017": "MongoDB",
+          "6379": "Redis",
+          "9200": "Elasticsearch",
+          "5601": "Kibana",
+          "8080": "HTTP-Alt",
+          "8443": "HTTPS-Alt",
+          "2181": "Zookeeper",
+          "9092": "Kafka",
+          "11211": "Memcached",
+          "5984": "CouchDB",
+          "2379": "etcd",
+          "4444": "Metasploit/RAT"
+        }
+      },
+      "severity": {
+        "metric": "port",
+        "bands": [
+          {
+            "in": [
+              22,
+              3389,
+              1433,
+              3306,
+              5432,
+              27017,
+              6379,
+              9200,
+              2379,
+              4444
+            ],
+            "level": "CRITICAL"
+          },
+          {
+            "in": [
+              5601,
+              2181,
+              9092,
+              11211,
+              5984
+            ],
+            "level": "HIGH"
+          },
+          {
+            "in": [
+              8080,
+              8443
+            ],
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict port {port} ({service}) on {resource_id} to specific trusted IP ranges.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_ingress_rules"
+    },
+    {
+      "rule_id": "SEC-SG-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "Security group opens a large port range to the internet",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ],
+        "max_port_span": 100,
+        "exempt_from_ports": [
+          -1,
+          80,
+          443
+        ]
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Replace the broad port range {from_port}-{to_port} on {resource_id} with the specific ports required.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_ingress_rules"
+    },
+    {
+      "rule_id": "SEC-SG-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "Security group allows all outbound traffic",
+      "params": {
+        "public_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict egress on {resource_id} to required destinations.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_egress_rules"
+    },
+    {
+      "rule_id": "SEC-SG-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "Default security group has inbound rules",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove all rules from the default security group {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_default_sg"
+    },
+    {
+      "rule_id": "SEC-SG-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "Security group not attached to any resource",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete unused security group {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::SecurityGroup",
+      "checker": "sg_checker._check_unused_sg"
+    },
+    {
+      "rule_id": "SEC-CT-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail missing or trail not multi-region",
+      "params": {},
+      "severity": {
+        "metric": "condition",
+        "bands": [
+          {
+            "eq": "no_trails",
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a multi-region CloudTrail trail, or convert {resource_id} to multi-region.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker.lambda_handler / _check_multi_region"
+    },
+    {
+      "rule_id": "SEC-CT-001b",
+      "domain": "security",
+      "enabled": true,
+      "title": "No multi-region CloudTrail trail in account",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable a multi-region CloudTrail trail.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker.lambda_handler"
+    },
+    {
+      "rule_id": "SEC-CT-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail log file validation disabled",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable log file validation on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker._check_log_validation"
+    },
+    {
+      "rule_id": "SEC-CT-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail not encrypted with KMS",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Configure a customer-managed KMS key for {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker._check_encryption"
+    },
+    {
+      "rule_id": "SEC-CT-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail not delivering to CloudWatch Logs",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Configure {resource_id} to deliver logs to a CloudWatch Logs group.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker._check_cloudwatch_logs"
+    },
+    {
+      "rule_id": "SEC-CT-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail S3 bucket not blocking public access",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable all public access block settings on CloudTrail bucket {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "cloudtrail_checker._check_s3_bucket_access"
+    },
+    {
+      "rule_id": "SEC-CT-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "CloudTrail not logging all management events",
+      "params": {
+        "required_read_write_type": "All"
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set the event selectors on {resource_id} to include all read and write management events.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::CloudTrail::Trail",
+      "checker": "cloudtrail_checker._check_management_events"
+    },
+    {
+      "rule_id": "SEC-GD-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "GuardDuty not enabled",
+      "params": {
+        "required_status": "ENABLED"
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable GuardDuty (detector {resource_id}) in all active regions.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::GuardDuty::Detector",
+      "checker": "guardduty_checker.lambda_handler / _check_detector_status"
+    },
+    {
+      "rule_id": "SEC-GD-001b",
+      "domain": "security",
+      "enabled": true,
+      "title": "GuardDuty finding frequency is six hours",
+      "params": {
+        "flagged_frequency": "SIX_HOURS",
+        "recommended_frequency": "FIFTEEN_MINUTES"
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Change the finding publishing frequency of {resource_id} to {recommended_frequency}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::GuardDuty::Detector",
+      "checker": "guardduty_checker._check_detector_status"
+    },
+    {
+      "rule_id": "SEC-GD-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "Active GuardDuty finding",
+      "params": {
+        "lookback_days": 7,
+        "max_findings": 50,
+        "min_reported_level": "MEDIUM"
+      },
+      "severity": {
+        "metric": "guardduty_score",
+        "bands": [
+          {
+            "gte": 7.0,
+            "level": "CRITICAL"
+          },
+          {
+            "gte": 4.0,
+            "level": "HIGH"
+          },
+          {
+            "gte": 1.0,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate GuardDuty finding {resource_id} (type {guardduty_type}).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::GuardDuty::Finding",
+      "checker": "guardduty_checker._check_active_findings"
+    },
+    {
+      "rule_id": "SEC-GD-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "GuardDuty S3 Protection not enabled",
+      "params": {
+        "feature_name": "S3_DATA_EVENTS"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable S3 Protection on GuardDuty detector {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::GuardDuty::Detector",
+      "checker": "guardduty_checker._check_s3_protection"
+    },
+    {
+      "rule_id": "SEC-KMS-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "KMS key rotation not enabled",
+      "params": {
+        "key_spec": "SYMMETRIC_DEFAULT",
+        "skip_aws_managed": true
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable automatic annual rotation for {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::KMS::Key",
+      "checker": "kms_secrets_checker._check_key_rotation"
+    },
+    {
+      "rule_id": "SEC-KMS-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "KMS key policy allows any AWS principal",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict the key policy of {resource_id} to specific IAM roles and users.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::KMS::Key",
+      "checker": "kms_secrets_checker._check_key_policy"
+    },
+    {
+      "rule_id": "SEC-KMS-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "KMS key pending deletion",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Confirm no service uses {resource_id} before it is deleted on {deletion_date}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::KMS::Key",
+      "checker": "kms_secrets_checker._check_pending_deletion"
+    },
+    {
+      "rule_id": "SEC-SEC-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "Secret rotation not enabled",
+      "params": {
+        "sensitive_name_keywords": [
+          "password",
+          "api_key",
+          "secret",
+          "token",
+          "credential"
+        ]
+      },
+      "severity": {
+        "metric": "name_looks_sensitive",
+        "bands": [
+          {
+            "eq": true,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable automatic rotation for {resource_id} with a rotation Lambda.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::SecretsManager::Secret",
+      "checker": "kms_secrets_checker._check_secret_rotation"
+    },
+    {
+      "rule_id": "SEC-SEC-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "Secret not accessed recently",
+      "params": {
+        "max_days_unaccessed": 90
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete {resource_id} (unused {days_unused} days) or confirm it is still needed.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::SecretsManager::Secret",
+      "checker": "kms_secrets_checker._check_secret_unused"
+    },
+    {
+      "rule_id": "SEC-SEC-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "Secret uses the AWS-managed key",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Encrypt {resource_id} with a customer-managed KMS key.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::SecretsManager::Secret",
+      "checker": "kms_secrets_checker._check_secret_encryption"
+    },
+    {
+      "rule_id": "SEC-LMB-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda uses a deprecated runtime",
+      "params": {
+        "deprecated_runtimes": [
+          "python3.6",
+          "python3.7",
+          "python3.8",
+          "nodejs10.x",
+          "nodejs12.x",
+          "nodejs14.x",
+          "java8",
+          "dotnet6",
+          "ruby2.7",
+          "go1.x",
+          "provided"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Migrate {resource_id} off {runtime}: python3.12, nodejs22.x, java21, or provided.al2023 for Go.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_deprecated_runtime"
+    },
+    {
+      "rule_id": "SEC-LMB-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda env var may hold a plaintext secret",
+      "params": {
+        "secret_key_regex": "(password|passwd|secret|token|api[_-]?key|access[_-]?key|private[_-]?key|credential)",
+        "secret_key_regex_flags": "IGNORECASE",
+        "plaintext_value_regex": "^(?!arn:)(?!{{).{8,}$"
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Move env var {env_var} of {resource_id} to Secrets Manager or SSM SecureString and read it at runtime.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_env_var_secrets"
+    },
+    {
+      "rule_id": "SEC-LMB-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda has no dead-letter queue",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Configure an SQS queue or SNS topic as the dead-letter queue for {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_dead_letter_queue"
+    },
+    {
+      "rule_id": "SEC-LMB-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda resource policy allows any principal",
+      "params": {
+        "narrowing_condition_operators": [
+          "ArnLike",
+          "ArnEquals",
+          "StringEquals"
+        ]
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restrict the resource policy of {resource_id} to specific accounts, services or ARNs, with aws:SourceArn/aws:SourceAccount conditions.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_public_resource_policy"
+    },
+    {
+      "rule_id": "SEC-LMB-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda does not enforce code signing",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create an AWS Signer profile and code signing configuration and associate it with {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_code_signing"
+    },
+    {
+      "rule_id": "SEC-LMB-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "Lambda execution role name suggests admin access",
+      "params": {
+        "suspicious_role_name_terms": [
+          "admin",
+          "administrator",
+          "root",
+          "superuser",
+          "fullaccess"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review the policies on {role_name} used by {resource_id} and reduce them to least privilege.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::Lambda::Function",
+      "checker": "lambda_security_checker._check_admin_role"
+    },
+    {
+      "rule_id": "SEC-RDS-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS instance publicly accessible",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set PubliclyAccessible=false on {resource_id}; reach it through VPN, bastion or PrivateLink only.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_public_access"
+    },
+    {
+      "rule_id": "SEC-RDS-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS instance storage not encrypted",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Snapshot {resource_id}, copy the snapshot with encryption, and restore from the encrypted copy.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_encryption"
+    },
+    {
+      "rule_id": "SEC-RDS-002c",
+      "domain": "security",
+      "enabled": true,
+      "title": "Aurora cluster storage not encrypted",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Restore {resource_id} from an encrypted snapshot.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBCluster",
+      "checker": "rds_security_checker._check_cluster_encryption"
+    },
+    {
+      "rule_id": "SEC-RDS-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS instance deletion protection disabled",
+      "params": {
+        "env_tag_keys": [
+          "env"
+        ],
+        "env_tag_match": "case_insensitive"
+      },
+      "severity": {
+        "metric": "env_tag",
+        "bands": [
+          {
+            "eq": "production",
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable DeletionProtection on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_deletion_protection"
+    },
+    {
+      "rule_id": "SEC-RDS-003c",
+      "domain": "security",
+      "enabled": true,
+      "title": "Aurora cluster deletion protection disabled",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable DeletionProtection on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBCluster",
+      "checker": "rds_security_checker._check_cluster_deletion_protection"
+    },
+    {
+      "rule_id": "SEC-RDS-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS backup retention too short",
+      "params": {
+        "min_backup_retention_days": 7
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set BackupRetentionPeriod on {resource_id} to at least {min_backup_retention_days} days (35 for production).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_backup_retention"
+    },
+    {
+      "rule_id": "SEC-RDS-004c",
+      "domain": "security",
+      "enabled": true,
+      "title": "Aurora backup retention too short",
+      "params": {
+        "min_backup_retention_days": 7
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set BackupRetentionPeriod on {resource_id} to at least {min_backup_retention_days} days.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBCluster",
+      "checker": "rds_security_checker._check_cluster_backup_retention"
+    },
+    {
+      "rule_id": "SEC-RDS-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS auto minor version upgrade disabled",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable AutoMinorVersionUpgrade on {resource_id} and set a maintenance window.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_minor_upgrade"
+    },
+    {
+      "rule_id": "SEC-RDS-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "Production RDS instance not Multi-AZ",
+      "params": {
+        "env_tag_keys": [
+          "env"
+        ],
+        "applies_when_env": "production"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable Multi-AZ on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_multi_az"
+    },
+    {
+      "rule_id": "SEC-RDS-007",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS uses a default master username",
+      "params": {
+        "risky_master_usernames": [
+          "admin",
+          "administrator",
+          "root",
+          "postgres",
+          "mysql",
+          "dbadmin",
+          "master"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a uniquely named admin user on {resource_id} and demote the default '{master_username}'.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_master_username"
+    },
+    {
+      "rule_id": "SEC-RDS-008",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS enhanced monitoring disabled",
+      "params": {
+        "recommended_interval_seconds": 60
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable Enhanced Monitoring on {resource_id} at a {recommended_interval_seconds}-second interval.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_security_checker._check_instance_enhanced_monitoring"
+    },
+    {
+      "rule_id": "SEC-RDS-009",
+      "domain": "security",
+      "enabled": true,
+      "title": "Aurora IAM database authentication disabled",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable IAM database authentication on {resource_id} and use short-lived tokens.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBCluster",
+      "checker": "rds_security_checker._check_cluster_iam_auth"
+    },
+    {
+      "rule_id": "SEC-RDS-010",
+      "domain": "security",
+      "enabled": true,
+      "title": "RDS snapshot publicly shared",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove public access from {resource_id} immediately, audit for exposure and notify the security team.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::RDS::DBSnapshot",
+      "checker": "rds_security_checker._check_public_snapshots"
+    },
+    {
+      "rule_id": "SEC-EKS-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS API endpoint public with no IP restriction",
+      "params": {
+        "unrestricted_cidrs": [
+          "0.0.0.0/0",
+          "::/0"
+        ]
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Disable public endpoint access on {resource_id}, or restrict publicAccessCidrs to corporate ranges.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_public_endpoint"
+    },
+    {
+      "rule_id": "SEC-EKS-001b",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS API endpoint public (CIDR-restricted)",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Consider disabling the public endpoint on {resource_id} if VPC/VPN access is available.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_public_endpoint"
+    },
+    {
+      "rule_id": "SEC-EKS-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS control plane logging incomplete",
+      "params": {
+        "required_log_types": [
+          "api",
+          "audit",
+          "authenticator",
+          "controllerManager",
+          "scheduler"
+        ]
+      },
+      "severity": {
+        "metric": "missing_audit_or_api",
+        "bands": [
+          {
+            "eq": true,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable the missing control plane log types on {resource_id}: {missing_log_types}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_logging"
+    },
+    {
+      "rule_id": "SEC-EKS-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS Kubernetes version below minimum",
+      "params": {
+        "min_k8s_version": "1.29"
+      },
+      "severity": {
+        "metric": "minor_versions_behind",
+        "bands": [
+          {
+            "gt": 2,
+            "level": "CRITICAL"
+          }
+        ],
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Upgrade {resource_id} from Kubernetes {k8s_version} to at least {min_k8s_version}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_k8s_version"
+    },
+    {
+      "rule_id": "SEC-EKS-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS secrets not envelope-encrypted",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Associate a KMS key with the encryptionConfig of {resource_id} for the 'secrets' resource.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_envelope_encryption"
+    },
+    {
+      "rule_id": "SEC-EKS-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS cluster has no OIDC provider",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Associate an IAM OIDC provider with {resource_id} and move pod AWS access to IRSA.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Cluster",
+      "checker": "eks_checker._check_oidc_provider"
+    },
+    {
+      "rule_id": "SEC-EKS-006",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS node group cannot enforce IMDSv2",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Attach a launch template with HttpTokens=required and HttpPutResponseHopLimit=1 to {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Nodegroup",
+      "checker": "eks_checker._check_imdsv2"
+    },
+    {
+      "rule_id": "SEC-EKS-007",
+      "domain": "security",
+      "enabled": true,
+      "title": "EKS node group not on AL2023 or Bottlerocket",
+      "params": {
+        "preferred_ami_type_substrings": [
+          "AL2023",
+          "BOTTLEROCKET"
+        ]
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Migrate {resource_id} from {ami_type} to AL2023 or Bottlerocket.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EKS::Nodegroup",
+      "checker": "eks_checker._check_node_ami_type"
+    },
+    {
+      "rule_id": "SEC-ECR-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "ECR does not scan images on push",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable scanOnPush on {resource_id}, or ECR Enhanced Scanning with Inspector.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Repository",
+      "checker": "ecr_checker._check_scan_on_push"
+    },
+    {
+      "rule_id": "SEC-ECR-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "ECR repository allows mutable tags",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Set imageTagMutability=IMMUTABLE on {resource_id} and deploy by image digest.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Repository",
+      "checker": "ecr_checker._check_image_tag_mutability"
+    },
+    {
+      "rule_id": "SEC-ECR-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "ECR repository has no lifecycle policy",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Add a lifecycle policy to {resource_id} that expires untagged images after 30 days.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Repository",
+      "checker": "ecr_checker._check_lifecycle_policy"
+    },
+    {
+      "rule_id": "SEC-ECR-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "ECR repository policy allows public access",
+      "params": {},
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove the wildcard principal from the policy on {resource_id}.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Repository",
+      "checker": "ecr_checker._check_repository_policy"
+    },
+    {
+      "rule_id": "SEC-ECR-005",
+      "domain": "security",
+      "enabled": true,
+      "title": "Latest ECR image has CRITICAL vulnerabilities",
+      "params": {
+        "critical_count_above": 0
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Rebuild {resource_id} on a patched base image ({critical_count} CRITICAL CVEs) and block its deployment until fixed.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Image",
+      "checker": "ecr_checker._check_image_vulnerabilities"
+    },
+    {
+      "rule_id": "SEC-ECR-005b",
+      "domain": "security",
+      "enabled": true,
+      "title": "Latest ECR image has many HIGH vulnerabilities",
+      "params": {
+        "high_count_above": 5
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Rebuild {resource_id} with an updated base image and patched dependencies ({high_count} HIGH CVEs).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::ECR::Image",
+      "checker": "ecr_checker._check_image_vulnerabilities"
+    },
+    {
+      "rule_id": "SEC-SSM-001",
+      "domain": "security",
+      "enabled": true,
+      "title": "SSM parameter stores a likely secret as String",
+      "params": {
+        "secret_name_regex": "(password|passwd|secret|token|api[_/.-]?key|access[_/.-]?key|private[_/.-]?key|credential|cert|certificate|private|auth|bearer|webhook)",
+        "secret_name_regex_flags": "IGNORECASE"
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Change {resource_id} to a SecureString encrypted with a KMS key.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::SSM::Parameter",
+      "checker": "ssm_checker._check_parameter_store"
+    },
+    {
+      "rule_id": "SEC-SSM-002",
+      "domain": "security",
+      "enabled": true,
+      "title": "SSM document shared publicly",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Remove public sharing from {resource_id}; share only with specific account IDs.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::SSM::Document",
+      "checker": "ssm_checker._check_public_documents"
+    },
+    {
+      "rule_id": "SEC-SSM-003",
+      "domain": "security",
+      "enabled": true,
+      "title": "EC2 instance not registered with SSM",
+      "params": {},
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Install the SSM agent on {resource_id} with an AmazonSSMManagedInstanceCore role, and ensure it can reach SSM endpoints.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ssm_checker._check_unmanaged_instances"
+    },
+    {
+      "rule_id": "SEC-SSM-003b",
+      "domain": "security",
+      "enabled": true,
+      "title": "SSM agent has not pinged recently",
+      "params": {
+        "stale_ping_days": 7
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Check the SSM agent on {resource_id} is running and has outbound HTTPS to SSM; restart it if needed.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ssm_checker._check_unmanaged_instances"
+    },
+    {
+      "rule_id": "SEC-SSM-004",
+      "domain": "security",
+      "enabled": true,
+      "title": "Instance missing CRITICAL patches",
+      "params": {
+        "patch_state_batch_size": 50
+      },
+      "severity": {
+        "default": "CRITICAL"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Run AWS-RunPatchBaseline with Operation=Install on {resource_id} ({critical_missing} critical patches missing).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ssm_checker._check_patch_compliance"
+    },
+    {
+      "rule_id": "SEC-SSM-004b",
+      "domain": "security",
+      "enabled": true,
+      "title": "Instance missing SECURITY patches",
+      "params": {
+        "patch_state_batch_size": 50
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Apply the security patch baseline to {resource_id} ({security_missing} security patches missing).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "security-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ssm_checker._check_patch_compliance"
+    }
+  ]
+}

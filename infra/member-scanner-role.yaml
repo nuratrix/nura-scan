@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Nura-Deterministic member-account scanner role (governance-platform-scanner). Deployed to
+  every member account by a service-managed StackSet (infra/deploy_scanner_role.ps1).
+  Read-only: lets the scanner Lambda in the governance account see configuration and
+  metrics, never data (no s3:GetObject, dynamodb:GetItem, secretsmanager:GetSecretValue, ...).
+  The judgment agents use their own role, governance-platform-reader, owned by Nura-Judgment.
+
+Parameters:
+  GovernanceAccountId:
+    Type: String
+    Default: "884458154630"
+    AllowedPattern: "^\\d{12}$"
+    Description: Account that runs the NuraGovernance scanner Lambda.
+  ExternalId:
+    Type: String
+    Default: governance-platform
+    NoEcho: true
+    Description: Must match external_id in nura.common.session.assume_role_session.
+  AdditionalPrincipalArn:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional, for local runs only: your own IAM user or role in the governance account
+      (wildcards allowed, e.g. an AWSReservedSSO_* role). Leave empty in production.
+
+Conditions:
+  HasAdditionalPrincipal: !Not [!Equals [!Ref AdditionalPrincipalArn, ""]]
+
+Resources:
+  ScannerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: governance-platform-scanner
+      Description: Read-only configuration and metrics access for the Nura scanner
+      MaxSessionDuration: 3600
+      # Trust the governance account, but only the scanner Lambda's role in it, and only with
+      # the external ID. aws:PrincipalArn (not a role ARN principal) so this deploys before the
+      # NuraGovernance stack exists and survives its role being recreated.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: NuraScanner
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${GovernanceAccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+              ArnLike:
+                aws:PrincipalArn:
+                  - !Sub "arn:${AWS::Partition}:iam::${GovernanceAccountId}:role/NuraGovernance-Scanner*"
+                  - !If [HasAdditionalPrincipal, !Ref AdditionalPrincipalArn, !Ref AWS::NoValue]
+      ManagedPolicyArns:
+        # Configuration and metadata across services; neither policy reads data contents.
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/SecurityAudit"
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/job-function/ViewOnlyAccess"
+      Policies:
+        - PolicyName: nura-scanner-extras
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Utilisation metrics the checkers measure (idle EC2/RDS, S3 bucket size)
+              - Sid: Metrics
+                Effect: Allow
+                Action:
+                  - cloudwatch:GetMetricStatistics
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:ListMetrics
+                Resource: "*"
+              # S3 cost checkers (COST-S3-001..004): bucket configuration, never objects
+              - Sid: S3Config
+                Effect: Allow
+                Action:
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketLocation
+                  - s3:GetBucketVersioning
+                  - s3:GetLifecycleConfiguration
+                  - s3:GetIntelligentTieringConfiguration
+                  - s3:GetAnalyticsConfiguration
+                Resource: "*"
+              # Cost Explorer and the Price List API are called from the governance account,
+              # with the scanner's own role, so they are not granted here.
+
+Outputs:
+  RoleArn:
+    Value: !GetAtt ScannerRole.Arn

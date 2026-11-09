@@ -1,0 +1,241 @@
+{
+  "schema_version": "1.0",
+  "domain": "cost-anomaly",
+  "rules": [
+    {
+      "rule_id": "COST-ANO-001",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "Cost anomaly detected",
+      "params": {
+        "days_back": 7,
+        "feedback_filter": "PLANNED_ACTIVITY"
+      },
+      "severity": {
+        "metric": "total_impact_usd",
+        "bands": [
+          {
+            "gte": 1000,
+            "level": "CRITICAL"
+          },
+          {
+            "gte": 250,
+            "level": "HIGH"
+          },
+          {
+            "gte": 50,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate anomaly {resource_id} (${total_impact_usd} unexpected spend; root causes: {root_cause_summary}). Check for unauthorised resources, runaway auto-scaling or misconfigured data transfer, then record feedback in Cost Explorer.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::Anomaly",
+      "checker": "anomaly_detector._check_active_anomalies"
+    },
+    {
+      "rule_id": "COST-ANO-002",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "No Cost Anomaly Detection monitors configured",
+      "params": {},
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create a Cost Anomaly Detection monitor: start with an AWS services monitor, then add linked-account monitors.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::AnomalyMonitor",
+      "checker": "anomaly_detector._check_anomaly_monitors"
+    },
+    {
+      "rule_id": "COST-ANO-003",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "No Cost Anomaly Detection alert subscriptions",
+      "params": {
+        "suggested_threshold_usd": 50
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Create an anomaly subscription to an SNS topic or email with a sensible threshold (e.g. ${suggested_threshold_usd} absolute impact).",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::AnomalySubscription",
+      "checker": "anomaly_detector._check_anomaly_subscriptions"
+    },
+    {
+      "rule_id": "COST-ANO-003b",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "Anomaly subscription alerts on every anomaly ($0 threshold)",
+      "params": {
+        "flagged_threshold_usd": 0,
+        "suggested_min_threshold_usd": 25,
+        "suggested_max_threshold_usd": 50
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Raise the threshold on {resource_id} to ${suggested_min_threshold_usd}-${suggested_max_threshold_usd} to reduce alert fatigue.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::AnomalySubscription",
+      "checker": "anomaly_detector._check_anomaly_subscriptions"
+    },
+    {
+      "rule_id": "COST-RCA-001",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "Service spend spike",
+      "params": {
+        "spike_window_days": 7,
+        "baseline_days": 14,
+        "min_delta_daily_usd": 10
+      },
+      "severity": {
+        "metric": "pct_change",
+        "bands": [
+          {
+            "gte": 200,
+            "level": "CRITICAL"
+          },
+          {
+            "metric": "delta_daily_usd",
+            "gte": 100,
+            "level": "CRITICAL"
+          },
+          {
+            "gte": 100,
+            "level": "HIGH"
+          },
+          {
+            "metric": "delta_daily_usd",
+            "gte": 50,
+            "level": "HIGH"
+          },
+          {
+            "gte": 50,
+            "level": "MEDIUM"
+          },
+          {
+            "metric": "delta_daily_usd",
+            "gte": 10,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Investigate new or changed resources in {resource_id} (+${delta_daily_usd}/day). In Cost Explorer filter by SERVICE over the spike window, then group by USAGE_TYPE and RESOURCE_ID.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::ServiceSpike",
+      "checker": "root_cause_analyzer._check_service_spend_spikes"
+    },
+    {
+      "rule_id": "COST-RCA-002",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "Linked account spend spike",
+      "params": {
+        "spike_window_days": 7,
+        "baseline_days": 14,
+        "min_delta_daily_usd": 10,
+        "skip_scanned_account": true
+      },
+      "severity": {
+        "metric": "pct_change",
+        "bands": [
+          {
+            "gte": 100,
+            "level": "HIGH"
+          },
+          {
+            "metric": "delta_daily_usd",
+            "gte": 50,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Open account {resource_id} in Cost Explorer filtered by SERVICE (+${delta_daily_usd}/day). Check CloudTrail for recent RunInstances/Create* events and confirm budget alerts and SCPs are in place.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::Organizations::Account",
+      "checker": "root_cause_analyzer._check_linked_account_spikes"
+    },
+    {
+      "rule_id": "COST-RCA-003",
+      "domain": "cost-anomaly",
+      "enabled": true,
+      "title": "Region spend spike or new region",
+      "params": {
+        "spike_window_days": 7,
+        "baseline_days": 14,
+        "min_delta_daily_usd": 10,
+        "excluded_regions": [
+          "NoRegion",
+          "global"
+        ]
+      },
+      "severity": {
+        "metric": "new_region",
+        "bands": [
+          {
+            "eq": true,
+            "level": "HIGH"
+          },
+          {
+            "metric": "pct_change",
+            "gte": 100,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Review resources in {resource_id} (+${delta_daily_usd}/day) via Cost Explorer filtered by REGION, grouped by SERVICE. If the region should not be used, deny it with an SCP.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-anomaly-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::RegionSpike",
+      "checker": "root_cause_analyzer._check_region_spend_spikes"
+    }
+  ]
+}

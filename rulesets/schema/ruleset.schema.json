@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ruleset.schema.json",
+  "title": "Governance agent ruleset",
+  "description": "One file per agent. Checkers keep the detection logic (how to read AWS state); every threshold, severity band, recommendation, routing target and remediation permission lives here. Prices live in pricing.json.",
+  "type": "object",
+  "required": ["schema_version", "domain", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "domain": { "type": "string" },
+    "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } }
+  },
+  "$defs": {
+    "level": { "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+
+    "agent_id": {
+      "description": "Must match conflict_rules.DOMAIN_BY_AGENT, which is what the orchestrator routes and resolves on.",
+      "enum": ["cost-agent", "cost-anomaly-agent", "incident-agent", "security-agent", "compliance-agent",
+               "infra-agent", "network-security-agent", "access-analyzer-agent", "backup-dr-agent"]
+    },
+
+    "comparison": {
+      "description": "Exactly one operator. Numeric operators are the only ones allowed for numbers; their boundaries are fixed: lt = value < x, lte = value <= x, gt = value > x, gte = value >= x. eq = value == x and in = value is one of x apply to strings, booleans and enumerated numbers (e.g. ports).",
+      "oneOf": [
+        { "required": ["lt"] },
+        { "required": ["lte"] },
+        { "required": ["gt"] },
+        { "required": ["gte"] },
+        { "required": ["eq"] },
+        { "required": ["in"] }
+      ]
+    },
+
+    "band": {
+      "description": "Severity bands are evaluated in order; the first match sets the level. 'metric' overrides the severity-level metric for this band only (OR across two metrics).",
+      "type": "object",
+      "required": ["level"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": { "type": "string" },
+        "lt":  { "type": "number" },
+        "lte": { "type": "number" },
+        "gt":  { "type": "number" },
+        "gte": { "type": "number" },
+        "eq":  { "type": ["string", "number", "boolean"] },
+        "in":  { "type": "array", "minItems": 1, "items": { "type": ["string", "number"] } },
+        "level": { "$ref": "#/$defs/level" }
+      },
+      "allOf": [{ "$ref": "#/$defs/comparison" }]
+    },
+
+    "condition": {
+      "type": "object",
+      "required": ["metric"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": { "type": "string" },
+        "lt":  { "type": "number" },
+        "lte": { "type": "number" },
+        "gt":  { "type": "number" },
+        "gte": { "type": "number" },
+        "eq":  { "type": ["string", "number", "boolean"] },
+        "in":  { "type": "array", "minItems": 1, "items": { "type": ["string", "number"] } }
+      },
+      "allOf": [{ "$ref": "#/$defs/comparison" }]
+    },
+
+    "severity": {
+      "description": "Base severity. A severity with only 'default' is fixed.",
+      "type": "object",
+      "required": ["default"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": { "type": "string", "description": "Name of the value the checker computes for the finding." },
+        "bands": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/band" } },
+        "default": { "$ref": "#/$defs/level" }
+      },
+      "dependentRequired": { "bands": ["metric"] }
+    },
+
+    "remediation": {
+      "description": "Whether a finding of this rule may be remediated automatically. This, not the agent, decides. null = never.",
+      "type": "object",
+      "required": ["action", "eligible_when", "requires_approval"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": ["delete_ebs_volume", "release_elastic_ip", "deactivate_access_key", "restart_ecs_service"]
+        },
+        "eligible_when": {
+          "description": "Condition on a finding metric that must hold. null = eligible for every finding of this rule.",
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/condition" }]
+        },
+        "requires_approval": { "type": "boolean" }
+      },
+      "if": {
+        "properties": { "action": { "enum": ["delete_ebs_volume", "release_elastic_ip", "deactivate_access_key"] } }
+      },
+      "then": {
+        "properties": { "requires_approval": { "const": true } }
+      }
+    },
+
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "domain", "enabled", "title", "params", "severity", "min_saving_usd",
+                   "recommendation", "recommended_action", "remediation", "controls", "agents",
+                   "resource_type", "checker"],
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": { "type": "string", "pattern": "^[A-Z0-9]+(-[A-Za-z0-9]+)+$" },
+        "domain": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "title": { "type": "string" },
+        "params": {
+          "description": "Thresholds and lists the checker reads instead of hardcoding them.",
+          "type": "object"
+        },
+        "severity": { "$ref": "#/$defs/severity" },
+        "min_saving_usd": {
+          "description": "Suppress the finding when estimated monthly saving < this value (i.e. saving >= value is kept). 0 = no floor.",
+          "type": "number",
+          "minimum": 0
+        },
+        "recommendation": {
+          "description": "Template. {name} is filled from the finding's fields, then from params.",
+          "type": "string"
+        },
+        "recommended_action": {
+          "description": "conflict_rules.ACTIONS value the orchestrator reconciles across agents. null = no write action to reconcile.",
+          "enum": [null,
+                   "TERMINATE", "DELETE", "DELETE_SNAPSHOT", "STOP",
+                   "PRESERVE", "QUARANTINE", "ISOLATE", "ACTIVE_INVESTIGATION",
+                   "REMOVE_REDUNDANCY", "ENFORCE_REDUNDANCY", "REDUCE_RETENTION", "RETENTION_FLOOR",
+                   "BACKUP_IN_FLIGHT", "RESTORE_IN_FLIGHT", "DR_TEST_WINDOW", "CROSS_REGION_REPLICA",
+                   "DOWNSIZE", "SCHEDULE_OFF", "SCALE_UP", "SCALE_OUT",
+                   "OPEN_PATH", "CLOSE_PATH", "GRANT", "REVOKE", "BREAK_GLASS_USED",
+                   "ROTATE_KEY", "PATCH_REBOOT", "REPLACE",
+                   "DATA_RESIDENCY", "ENCRYPT_CMK",
+                   "SPEND_SPIKE", "APPROVED_CHANGE", "MONITOR", "NO_ACTION"]
+        },
+        "remediation": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/remediation" }]
+        },
+        "controls": { "type": "array", "items": { "type": "string" } },
+        "agents": {
+          "description": "Agents that receive the finding. The owning agent is first; the rest must also evaluate it.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/agent_id" }
+        },
+        "resource_type": { "type": "string" },
+        "checker": { "type": "string", "description": "module.function that implements the rule." }
+      }
+    }
+  }
+}

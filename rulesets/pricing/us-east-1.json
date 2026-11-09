@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "region": "us-east-1",
+  "as_of": "2026-05-03",
+  "currency": "USD",
+  "hours_per_month": 720,
+  "notes": "Approximate on-demand list prices, transcribed from constants in the cost and infrastructure checkers. as_of is the commit that introduced them; they were not re-verified against the AWS Price List API. Applying these to findings in other regions misstates savings.",
+  "prices": {
+    "ec2_hourly_price_usd": {
+      "t3.micro": 0.0104,
+      "t3.small": 0.0208,
+      "t3.medium": 0.0416,
+      "t3.large": 0.0832,
+      "t3.xlarge": 0.1664,
+      "t3.2xlarge": 0.3328,
+      "m5.large": 0.096,
+      "m5.xlarge": 0.192,
+      "m5.2xlarge": 0.384,
+      "m5.4xlarge": 0.768,
+      "m5.8xlarge": 1.536,
+      "c5.large": 0.085,
+      "c5.xlarge": 0.17,
+      "c5.2xlarge": 0.34,
+      "r5.large": 0.126,
+      "r5.xlarge": 0.252,
+      "r5.2xlarge": 0.504
+    },
+    "ec2_default_hourly_price_usd": 0.1,
+    "ebs_usd_per_gb_month": {
+      "gp3": 0.08,
+      "gp2": 0.1,
+      "io1": 0.125,
+      "io2": 0.125,
+      "st1": 0.045,
+      "sc1": 0.015
+    },
+    "ebs_default_usd_per_gb_month": 0.08,
+    "ebs_fallback_volume_usd_per_month": 8.0,
+    "elastic_ip_idle_usd_per_hour": 0.005,
+    "nat_gateway_usd_per_month": 32,
+    "rds_default_monthly_price_usd": 200,
+    "rds_snapshot_usd_per_gb_month": 0.095,
+    "rds_monthly_price_usd": {
+      "db.t3.micro": 15,
+      "db.t3.small": 30,
+      "db.t3.medium": 60,
+      "db.t3.large": 120,
+      "db.t3.xlarge": 240,
+      "db.t3.2xlarge": 480,
+      "db.m5.large": 138,
+      "db.m5.xlarge": 276,
+      "db.m5.2xlarge": 552,
+      "db.m5.4xlarge": 1104,
+      "db.m5.8xlarge": 2208,
+      "db.r5.large": 180,
+      "db.r5.xlarge": 360,
+      "db.r5.2xlarge": 720,
+      "db.r5.4xlarge": 1440
+    },
+    "s3_usd_per_gb_month": {
+      "StandardStorage": 0.023,
+      "IntelligentTieringStorage": 0.023,
+      "StandardIAStorage": 0.0125,
+      "OneZoneIAStorage": 0.01,
+      "GlacierInstantRetrieval": 0.004,
+      "GlacierFlexibleRetrieval": 0.0036,
+      "DeepArchiveStorage": 0.00099
+    }
+  },
+  "rds_downsize_map": {
+    "db.m5.8xlarge": "db.m5.4xlarge",
+    "db.m5.4xlarge": "db.m5.2xlarge",
+    "db.m5.2xlarge": "db.m5.xlarge",
+    "db.m5.xlarge": "db.m5.large",
+    "db.r5.4xlarge": "db.r5.2xlarge",
+    "db.r5.2xlarge": "db.r5.xlarge",
+    "db.r5.xlarge": "db.r5.large",
+    "db.t3.2xlarge": "db.t3.xlarge",
+    "db.t3.xlarge": "db.t3.large",
+    "db.t3.large": "db.t3.medium",
+    "db.t3.medium": "db.t3.small"
+  }
+}

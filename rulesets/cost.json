@@ -1,0 +1,503 @@
+{
+  "schema_version": "1.0",
+  "domain": "cost",
+  "rules": [
+    {
+      "rule_id": "COST-EC2-001",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Idle EC2 instance",
+      "params": {
+        "cpu_threshold_pct": 5,
+        "lookback_days": 14,
+        "saving_fraction": 0.9
+      },
+      "severity": {
+        "metric": "avg_cpu_pct",
+        "bands": [
+          {
+            "lt": 1,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Stop or downsize {resource_id}: avg CPU {avg_cpu_pct}% over {lookback_days} days. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "STOP",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ec2_cost_checker._check_idle_instances"
+    },
+    {
+      "rule_id": "COST-EC2-002",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Stopped EC2 instance still accruing EBS charges",
+      "params": {
+        "include_stopped": true
+      },
+      "severity": {
+        "metric": "days_stopped",
+        "bands": [
+          {
+            "gt": 30,
+            "level": "HIGH"
+          },
+          {
+            "gt": 7,
+            "level": "MEDIUM"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Terminate {resource_id} if it is no longer needed. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "TERMINATE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ec2_cost_checker._check_stopped_instances"
+    },
+    {
+      "rule_id": "COST-EC2-003",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Unattached EBS volume",
+      "params": {},
+      "severity": {
+        "metric": "days_unattached",
+        "bands": [
+          {
+            "gt": 30,
+            "level": "HIGH"
+          }
+        ],
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete {resource_id} if it is no longer needed; snapshot it first. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "DELETE",
+      "remediation": {
+        "action": "delete_ebs_volume",
+        "eligible_when": {
+          "metric": "days_unattached",
+          "gt": 30
+        },
+        "requires_approval": true
+      },
+      "controls": [],
+      "agents": [
+        "cost-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::EC2::Volume",
+      "checker": "ec2_cost_checker._check_unattached_volumes"
+    },
+    {
+      "rule_id": "COST-EC2-004",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Unused Elastic IP",
+      "params": {},
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Release Elastic IP {public_ip}. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "DELETE",
+      "remediation": {
+        "action": "release_elastic_ip",
+        "eligible_when": null,
+        "requires_approval": true
+      },
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::EC2::EIP",
+      "checker": "ec2_cost_checker._check_unused_elastic_ips"
+    },
+    {
+      "rule_id": "COST-EC2-005",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Previous-generation EC2 instance type",
+      "params": {
+        "previous_gen_families": [
+          "m1",
+          "m2",
+          "m3",
+          "c1",
+          "c3",
+          "r3",
+          "t1",
+          "i2",
+          "hs1",
+          "g2"
+        ],
+        "current_gen_map": {
+          "m1": "m5",
+          "m2": "r5",
+          "m3": "m5",
+          "c1": "c5",
+          "c3": "c5",
+          "r3": "r5",
+          "t1": "t3",
+          "i2": "i3",
+          "g2": "g4dn"
+        },
+        "current_gen_default": "m5",
+        "saving_fraction": 0.15
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Migrate {resource_id} ({instance_type}) to the current-generation {current_gen_suggestion} family. Estimated saving: ~${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::EC2::Instance",
+      "checker": "ec2_cost_checker._check_previous_gen_instances"
+    },
+    {
+      "rule_id": "COST-RDS-001",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Idle RDS database",
+      "params": {
+        "lookback_days": 14,
+        "max_connections_threshold": 1
+      },
+      "severity": {
+        "default": "HIGH"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Stop or delete {resource_id} if not needed; use scheduled start/stop for dev/test. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "STOP",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_cost_checker._check_idle_databases"
+    },
+    {
+      "rule_id": "COST-RDS-002",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Oversized RDS instance (low CPU)",
+      "params": {
+        "lookback_days": 14,
+        "avg_cpu_below_pct": 20,
+        "max_cpu_below_pct": 40,
+        "skip_class_substrings": [
+          "micro",
+          "small"
+        ],
+        "fallback_saving_fraction": 0.5
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 20,
+      "recommendation": "Downsize {resource_id} from {current_instance_class} to {recommended_instance_class}. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "DOWNSIZE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_cost_checker._check_low_cpu_databases"
+    },
+    {
+      "rule_id": "COST-RDS-003",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Large single-AZ RDS instance",
+      "params": {
+        "min_monthly_cost_usd": 200,
+        "saving_fraction": 0.3
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "If {resource_id} is production, enable Multi-AZ. If dev/test, downsize to {recommended_instance_class}.",
+      "recommended_action": "DOWNSIZE",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBInstance",
+      "checker": "rds_cost_checker._check_single_az_overprovisioned"
+    },
+    {
+      "rule_id": "COST-RDS-004",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Old manual RDS snapshot",
+      "params": {
+        "max_age_days": 90
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Delete snapshot {resource_id} ({age_days} days old) if it is not needed for recovery. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "DELETE_SNAPSHOT",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent",
+        "backup-dr-agent"
+      ],
+      "resource_type": "AWS::RDS::DBSnapshot",
+      "checker": "rds_cost_checker._check_old_snapshots"
+    },
+    {
+      "rule_id": "COST-RI-001",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Low Reserved Instance coverage",
+      "params": {
+        "lookback_days": 30,
+        "coverage_below_pct": 50,
+        "saving_fraction": 0.35,
+        "payment_option": "NO_UPFRONT",
+        "term": "ONE_YEAR"
+      },
+      "severity": {
+        "metric": "coverage_pct",
+        "bands": [
+          {
+            "lt": 20,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 50,
+      "recommendation": "Purchase RIs or a Savings Plan for {resource_id} instances ({coverage_pct}% covered). Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::ReservationCoverage",
+      "checker": "reservations_checker._check_ri_coverage"
+    },
+    {
+      "rule_id": "COST-RI-002",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Underutilised reservation",
+      "params": {
+        "lookback_days": 30,
+        "utilisation_below_pct": 80
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 20,
+      "recommendation": "Sell {resource_id} on the Reserved Instance Marketplace or modify it to match usage ({utilisation_pct}% utilised). Wasted spend: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::ReservationUtilization",
+      "checker": "reservations_checker._check_ri_utilisation"
+    },
+    {
+      "rule_id": "COST-RI-003",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Reservation expiring soon",
+      "params": {
+        "expiry_window_days": 60
+      },
+      "severity": {
+        "metric": "days_until_expiry",
+        "bands": [
+          {
+            "lte": 30,
+            "level": "HIGH"
+          }
+        ],
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Renew {resource_id} ({instance_type}, expires {expiry_date}) if still needed; on-demand pricing is 30-60% higher.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::EC2::ReservedInstances",
+      "checker": "reservations_checker._check_expiring_reservations"
+    },
+    {
+      "rule_id": "COST-RI-004",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Low Savings Plan coverage",
+      "params": {
+        "lookback_days": 30,
+        "coverage_below_pct": 60,
+        "saving_fraction": 0.2,
+        "payment_option": "NO_UPFRONT",
+        "term": "ONE_YEAR"
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 50,
+      "recommendation": "Purchase a Compute Savings Plan ({coverage_pct}% of eligible spend covered). Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::SavingsPlanCoverage",
+      "checker": "reservations_checker._check_savings_plan_coverage"
+    },
+    {
+      "rule_id": "COST-RI-005",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Reserved Instance purchase recommended",
+      "params": {
+        "service": "Amazon Elastic Compute Cloud - Compute",
+        "lookback_period": "THIRTY_DAYS",
+        "term": "ONE_YEAR",
+        "payment_option": "NO_UPFRONT",
+        "min_recommendation_saving_usd": 50,
+        "max_details_per_recommendation": 3
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 10,
+      "recommendation": "Purchase {recommended_count}x {instance_type} 1-year No Upfront RI in {region}. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::CostExplorer::RIRecommendation",
+      "checker": "reservations_checker._get_ri_recommendations"
+    },
+    {
+      "rule_id": "COST-S3-001",
+      "domain": "cost",
+      "enabled": true,
+      "title": "S3 bucket has no lifecycle policy",
+      "params": {
+        "min_bucket_size_gb": 1.0,
+        "saving_fraction": 0.5
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 1,
+      "recommendation": "Add a lifecycle rule to {resource_id}: transition to Standard-IA after 30 days and Glacier after 90. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_cost_checker._check_lifecycle_policy"
+    },
+    {
+      "rule_id": "COST-S3-002",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Large S3 bucket without Intelligent-Tiering",
+      "params": {
+        "min_bucket_size_gb": 50,
+        "saving_fraction": 0.3
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable S3 Intelligent-Tiering on {resource_id} ({bucket_size_gb} GB). Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_cost_checker._check_intelligent_tiering"
+    },
+    {
+      "rule_id": "COST-S3-003",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Versioned bucket with no noncurrent-version expiry",
+      "params": {
+        "min_bucket_size_gb": 1.0,
+        "saving_fraction": 0.3
+      },
+      "severity": {
+        "default": "MEDIUM"
+      },
+      "min_saving_usd": 1,
+      "recommendation": "Add a lifecycle rule to {resource_id} that expires noncurrent versions after 30-90 days. Estimated saving: ${estimated_monthly_saving}/month.",
+      "recommended_action": "REDUCE_RETENTION",
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_cost_checker._check_versioning_expiry"
+    },
+    {
+      "rule_id": "COST-S3-004",
+      "domain": "cost",
+      "enabled": true,
+      "title": "Large S3 bucket without Storage Class Analysis",
+      "params": {
+        "min_bucket_size_gb": 100
+      },
+      "severity": {
+        "default": "LOW"
+      },
+      "min_saving_usd": 0,
+      "recommendation": "Enable S3 Storage Class Analysis on {resource_id} ({bucket_size_gb} GB) to find objects suitable for Standard-IA. It is free.",
+      "recommended_action": null,
+      "remediation": null,
+      "controls": [],
+      "agents": [
+        "cost-agent"
+      ],
+      "resource_type": "AWS::S3::Bucket",
+      "checker": "s3_cost_checker._check_storage_class_analysis"
+    }
+  ]
+}
